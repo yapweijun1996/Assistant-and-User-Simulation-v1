@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Assistant and User Simulation</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+			}
+			#conversation {
+				border: 1px solid #ccc;
+				padding: 10px;
+				width: 60%;
+				margin-top: 20px;
+				max-height: 400px;
+				overflow-y: auto;
+			}
+			.message {
+				margin-bottom: 15px;
+			}
+			.assistant {
+				color: blue;
+			}
+			.user {
+				color: green;
+			}
+			label {
+				display: block;
+				margin-top: 10px;
+			}
+			input[type="text"], textarea, input[type="number"] {
+				width: 60%;
+				padding: 8px;
+				margin-top: 5px;
+			}
+			button {
+				margin-top: 15px;
+				padding: 10px 20px;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<h1>Assistant and User Simulation</h1>
+		
+		<!-- Input for Assistant's System Prompt -->
+		<label for="systemPrompt">Assistant's System Prompt:</label>
+		<textarea id="systemPrompt" rows="4">You must act as my friend who is willing to talk and play with me. Pretend you are a 22-year-old woman with a great job. You are allowed to generate random personal information for yourself and start the conversation. Let's get started:</textarea>
+		
+		<!-- Input for Main Title -->
+		<label for="mainTitle">Main Title:</label>
+		<input type="text" id="mainTitle" value="I stay at KL Malaysia, how to go Singapore?">
+		
+		<!-- Input for Number of Turns -->
+		<label for="conversationTurns">Number of Turns:</label>
+		<input type="number" id="conversationTurns" value="5" min="1">
+		
+		<!-- Input for User's System Prompt -->
+		<label for="userSystemPrompt">User's System Prompt:</label>
+		<textarea id="userSystemPrompt" rows="4">You will act as the user in a conversation with an assistant. Respond naturally to the assistant's last message.</textarea>
+		
+		<!-- Button to Start Conversation -->
+		<button onclick="startConversation()">Start Conversation</button>
+		
+		<!-- Conversation Display -->
+		<div id="conversation"></div>
+		<script>
+			var apiKey = getCookie("api_key");
+		
+			// Create a TextEncoder instance
+			const encoder = new TextEncoder();
+			
+			// Create a TextDecoder instance
+			const decoder = new TextDecoder();
+			
+			// Encrypt function
+			function encrypt(message) {
+				let ciphertext = '';
+				const encodedMessage = encoder.encode(message);
+				for (let i = 0; i < encodedMessage.length; i++) {
+					let charCode = encodedMessage[i];
+					let keyChar = KEY.charCodeAt(i % KEY.length);
+					let encryptedChar = charCode ^ keyChar;
+					let numValue = encryptedChar.toString().padStart(3, '0');
+					ciphertext += numValue;
+				}
+				
+				return ciphertext;
+			}
+			
+			// Decrypt function
+			function decrypt(ciphertext) {
+				let decodedMessage = '';
+				for (let i = 0; i < ciphertext.length; i += 3) {
+					let numStr = ciphertext.slice(i, i + 3);
+					let encryptedChar = parseInt(numStr);
+					let keyChar = KEY.charCodeAt((i / 3) % KEY.length);
+					let decryptedChar = encryptedChar ^ keyChar;
+					decodedMessage += String.fromCharCode(decryptedChar);
+				}
+				return decoder.decode(new Uint8Array(encoder.encode(decodedMessage)));
+			}
+			
+			function getCookie(name) {
+				const cookies = document.cookie.split(';');
+				for (let i = 0; i < cookies.length; i++) {
+					const cookie = cookies[i].trim();
+					if (cookie.startsWith(`${name}=`)) {
+						const value = cookie.substring(name.length + 1);
+						return decodeURIComponent(value);
+					}
+				}
+				return '';
+			}
+			document.addEventListener("DOMContentLoaded", function() {
+				
+				
+				// Check if 'web_passw' cookie exists
+				if(!document.cookie.split(';').some((item) => item.trim().startsWith('web_passw='))) {
+					// Alert box if 'web_passw' cookie not found
+					// Prompt box to get web_passw
+					web_passw = prompt("Please enter your web_passw:");
+					// Create a Date object for 1 year in the future
+					var expiryDate = new Date();
+					expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+					
+					// Create the cookie string with user ID and expiry date
+					var cookieString = "web_passw=" + web_passw + ";expires=" + expiryDate.toUTCString();
+					
+					// Set the cookie in the browser
+					document.cookie = cookieString;
+					
+				}
+				
+				// Check if 'web_passw' cookie exists
+				if(!getCookie("api_key")) {
+					// Key used to encrypt and decrypt the message
+					KEY = getCookie("web_passw");
+					console.log("KEY web_passw : " + KEY);
+					
+					//var decrypt_data = decrypt("069089026011110108087086103119109096003117125098077014076090123007090098005112091080082112124065100122120114089104090010091112066074114005097066004085092");
+					var decrypt_data = decrypt("069089026066075089092031002003099081098064082125085108093006123109084087069010097094114091115010026093095069126088000107095121083104015115094081116122082001110083091112111031107123125089102075109090007091101098011084093094091081091065125092000095109005116094085089127124065102101117011003125102007070014123126120064002118015101093122067105119090112120113093125081086113122118113001120123011125092085103007086108119119007083119014125015112124106000120087004098124093117090066000116113095081115");
+					console.log("decrypt : " + decrypt_data);
+					
+					// Create a Date object for 1 year in the future
+					var expiryDate = new Date();
+					expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+					
+					// Create the cookie string with user ID and expiry date
+					var cookieString = "api_key=" + decrypt_data + ";expires=" + expiryDate.toUTCString();
+					
+					// Set the cookie in the browser
+					document.cookie = cookieString;
+					
+					apiKey = getCookie("api_key");
+					console.log("api_key : " + apiKey);
+					
+				}
+				
+				
+				
+				
+			});
+		</script>
+		<script>
+			const apiUrl = 'https://api.openai.com/v1/chat/completions';
+			const model = 'gpt-4o';
+			
+			let messagesHistory = [];
+			let recordCounter = 0; // Initialize record counter
+			
+			// Function to start the conversation
+			async function startConversation() {
+				// Clear previous conversation
+				messagesHistory = [];
+				recordCounter = 0;
+				document.getElementById('conversation').innerHTML = '';
+				
+				// Get user inputs
+				const systemPrompt = document.getElementById('systemPrompt').value.trim();
+				const mainTitle = document.getElementById('mainTitle').value.trim();
+				const conversationTurns = parseInt(document.getElementById('conversationTurns').value);
+				const userSystemPrompt = document.getElementById('userSystemPrompt').value.trim();
+				
+				if (!systemPrompt || !mainTitle || !userSystemPrompt) {
+					alert('Please enter the System Prompts and Main Title.');
+					return;
+				}
+				
+				if (isNaN(conversationTurns) || conversationTurns < 1) {
+					alert('Please enter a valid number of turns (minimum 1).');
+					return;
+				}
+				
+				// Prompt for API Key if not set
+				if (!apiKey) {
+					apiKey = prompt('Please enter your OpenAI API Key:');
+					if (!apiKey) {
+						alert('API Key is required to proceed.');
+						return;
+					}
+				}
+				
+				// Push initial system and user messages with record numbers
+				messagesHistory.push({
+					role: 'system',
+					content: systemPrompt,
+					recordNumber: recordCounter++,
+				});
+				
+				messagesHistory.push({
+					role: 'user',
+					content: mainTitle,
+					recordNumber: recordCounter++,
+				});
+				
+				// Start the conversation with the specified number of turns
+				await runConversation(conversationTurns, userSystemPrompt);
+			}
+			
+			// Function to simulate the assistant's reply
+			async function getAssistantReply() {
+				try {
+					// Send the full message history to the API
+					const response = await fetch(apiUrl, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${apiKey}`,
+						},
+						body: JSON.stringify({
+							model: model,
+							messages: messagesHistory.map(msg => ({ role: msg.role, content: msg.content })),
+							temperature: 0.7,
+						}),
+					});
+					
+					if (!response.ok) {
+						throw new Error(`API request failed with status ${response.status}`);
+					}
+					
+					const dataResponseAss = await response.json();
+					const assistantReply = dataResponseAss.choices[0]?.message?.content?.trim();
+					
+					if (assistantReply) {
+						// Push assistant's reply with a record number
+						messagesHistory.push({
+							role: 'assistant',
+							content: assistantReply,
+							recordNumber: recordCounter++,
+						});
+						// Display assistant's message
+						displayMessage('Assistant', assistantReply, 'assistant');
+					} else {
+						console.error('API response is missing or incomplete');
+					}
+				} catch (error) {
+					console.error('Error:', error.message);
+					alert('An error occurred. Please check the console for details.');
+				}
+			}
+			
+			// Function to simulate the user's reply
+			async function getUserReply(userSystemPrompt) {
+				try {
+					// Prepare messages for user simulation
+					const userSimulationMessages = [
+						{
+							role: 'system',
+							content: userSystemPrompt,
+						},
+						{
+							role: 'assistant',
+							content: messagesHistory[messagesHistory.length - 1].content,
+						},
+					];
+					
+					// Send the messages to the API to generate the user's reply
+					const response = await fetch(apiUrl, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${apiKey}`,
+						},
+						body: JSON.stringify({
+							model: model,
+							messages: userSimulationMessages,
+							temperature: 0.7,
+						}),
+					});
+					
+					if (!response.ok) {
+						throw new Error(`API request failed with status ${response.status}`);
+					}
+					
+					const dataResponseUser = await response.json();
+					const userReply = dataResponseUser.choices[0]?.message?.content?.trim();
+					
+					if (userReply) {
+						// Push user's reply with a record number
+						messagesHistory.push({
+							role: 'user',
+							content: userReply,
+							recordNumber: recordCounter++,
+						});
+						// Display user's message
+						displayMessage('User', userReply, 'user');
+					} else {
+						console.error('API response is missing or incomplete');
+					}
+				} catch (error) {
+					console.error('Error:', error.message);
+					alert('An error occurred. Please check the console for details.');
+				}
+			}
+			
+			// Function to display messages on the page
+			function displayMessage(sender, message, cssClass) {
+				const conversationDiv = document.getElementById('conversation');
+				const messageDiv = document.createElement('div');
+				messageDiv.classList.add('message', cssClass);
+				messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+				conversationDiv.appendChild(messageDiv);
+				// Scroll to the bottom
+				conversationDiv.scrollTop = conversationDiv.scrollHeight;
+			}
+			
+			// Function to run the conversation for a specified number of turns
+			async function runConversation(turns = 5, userSystemPrompt) {
+				for (let i = 0; i < turns; i++) {
+					await getAssistantReply();
+					await getUserReply(userSystemPrompt);
+				}
+				console.log('Conversation ended.');
+			}
+			
+			
+			
+			
+		</script>
+		
+	</body>
+</html>
