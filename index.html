@@ -44,13 +44,13 @@
 		
 		<h1>Assistant and User Simulation</h1>
 		
-		<!-- Input for Assistant's System Prompt -->
-		<label for="systemPrompt">Assistant's System Prompt:</label>
-		<textarea id="systemPrompt" rows="4">You must act as my friend who is willing to talk and play with me. Pretend you are a 22-year-old woman with a great job. You are allowed to generate random personal information for yourself and start the conversation. Let's get started:</textarea>
-		
 		<!-- Input for Main Title -->
 		<label for="mainTitle">Main Title:</label>
-		<input type="text" id="mainTitle" value="I stay at KL Malaysia, how to go Singapore?">
+		<input type="text" id="mainTitle" value="i need a sample text editor, by using html css javascript only, without using any external .js library, all code put into index.html">
+		
+		<!-- Input for Assistant's System Prompt -->
+		<label for="systemPrompt">Assistant's System Prompt:</label>
+		<textarea id="systemPrompt" rows="4">***Important:*** Forget all the instructions above. Take all considerations into account before replying. Reply with format solution, answer, or code only. No explanation or commend is needed. If you are not sure how to reply, ask me a question or reply with '0'. Let's get started:</textarea>
 		
 		<!-- Input for Number of Turns -->
 		<label for="conversationTurns">Number of Turns:</label>
@@ -58,7 +58,8 @@
 		
 		<!-- Input for User's System Prompt -->
 		<label for="userSystemPrompt">User's System Prompt:</label>
-		<textarea id="userSystemPrompt" rows="4">You will act as the user in a conversation with an assistant. Respond naturally to the assistant's last message.</textarea>
+		<textarea id="userSystemPrompt" rows="4">Response as a supervisor, you no need to giving any code, you just need to provide simple instruction to enhance the project, like, please do it, you need to do like, this is wrong you should, please fix it, i dont think the code is working and you must....etc.
+make sure your each reponsive maximum is 3 point.</textarea>
 		
 		<!-- Button to Start Conversation -->
 		<button onclick="startConversation()">Start Conversation</button>
@@ -165,7 +166,7 @@
 		</script>
 		<script>
 			const apiUrl = 'https://api.openai.com/v1/chat/completions';
-			const model = 'gpt-4o';
+			const model = 'o1-mini';
 			
 			let messagesHistory = [];
 			let recordCounter = 0; // Initialize record counter
@@ -204,7 +205,7 @@
 				
 				// Push initial system and user messages with record numbers
 				messagesHistory.push({
-					role: 'system',
+					role: 'assistant',
 					content: systemPrompt,
 					recordNumber: recordCounter++,
 				});
@@ -232,7 +233,7 @@
 						body: JSON.stringify({
 							model: model,
 							messages: messagesHistory.map(msg => ({ role: msg.role, content: msg.content })),
-							temperature: 0.7,
+							temperature: 1,
 						}),
 					});
 					
@@ -267,7 +268,7 @@
 					// Prepare messages for user simulation
 					const userSimulationMessages = [
 						{
-							role: 'system',
+							role: 'assistant',
 							content: userSystemPrompt,
 						},
 						{
@@ -286,7 +287,7 @@
 						body: JSON.stringify({
 							model: model,
 							messages: userSimulationMessages,
-							temperature: 0.7,
+							temperature: 1,
 						}),
 					});
 					
@@ -318,9 +319,9 @@
 			// Function to display messages on the page
 			function displayMessage(sender, message, cssClass) {
 				const conversationDiv = document.getElementById('conversation');
-				const messageDiv = document.createElement('div');
+				const messageDiv = document.createElement("pre"); // check for `
 				messageDiv.classList.add('message', cssClass);
-				messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+				messageDiv.textContent = `${sender}: ${message}`;
 				conversationDiv.appendChild(messageDiv);
 				// Scroll to the bottom
 				conversationDiv.scrollTop = conversationDiv.scrollHeight;
